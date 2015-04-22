@@ -97,13 +97,13 @@
     <Compile Include="TextBuffer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Hangfire.Firebird.Msmq\Hangfire.Firebird.Msmq.csproj">
+    <ProjectReference Include="..\..\src\Hangfire.Firebird.Msmq\Hangfire.SQLAnywhere.Msmq.csproj">
       <Project>{b128b2e9-96bb-4592-a56b-cd66424eb27b}</Project>
-      <Name>Hangfire.Firebird.Msmq</Name>
+      <Name>Hangfire.SQLAnywhere.Msmq</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\src\Hangfire.Firebird\Hangfire.Firebird.csproj">
+    <ProjectReference Include="..\..\src\Hangfire.Firebird\Hangfire.SQLAnywhere.csproj">
       <Project>{a740cbba-4e96-4370-bf86-1d0b33bc6542}</Project>
-      <Name>Hangfire.Firebird</Name>
+      <Name>Hangfire.SQLAnywhere</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
