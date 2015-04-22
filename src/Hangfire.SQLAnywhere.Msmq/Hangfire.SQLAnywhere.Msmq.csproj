@@ -59,7 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Hangfire.Firebird\Hangfire.SQLAnywhere.csproj">
+    <ProjectReference Include="..\Hangfire.SQLAnywhere\Hangfire.SQLAnywhere.csproj">
       <Project>{a740cbba-4e96-4370-bf86-1d0b33bc6542}</Project>
       <Name>Hangfire.SQLAnywhere</Name>
     </ProjectReference>
