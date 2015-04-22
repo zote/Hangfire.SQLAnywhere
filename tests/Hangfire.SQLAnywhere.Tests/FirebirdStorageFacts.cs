@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -24,22 +24,22 @@ using System;
 using System.Linq;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
-    public class FirebirdStorageFacts
+    public class SQLAnywhereStorageFacts
     {
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
 
-        public FirebirdStorageFacts()
+        public SQLAnywhereStorageFacts()
         {
-            _options = new FirebirdStorageOptions { PrepareSchemaIfNecessary = false };
+            _options = new SQLAnywhereStorageOptions { PrepareSchemaIfNecessary = false };
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionStringIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdStorage(nameOrConnectionString: null));
+                () => new SQLAnywhereStorage(nameOrConnectionString: null));
 
             Assert.Equal("nameOrConnectionString", exception.ParamName);
         }
@@ -48,7 +48,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdStorage("hello", null));
+                () => new SQLAnywhereStorage("hello", null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -57,7 +57,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_CanCreateSqlServerStorage_WithExistingConnection()
         {
             var connection = ConnectionUtils.CreateConnection();
-            var storage = new FirebirdStorage(connection, _options);
+            var storage = new SQLAnywhereStorage(connection, _options);
 
             Assert.NotNull(storage);
         }
@@ -68,7 +68,7 @@ namespace Hangfire.Firebird.Tests
             var storage = CreateStorage();
             var providers = storage.QueueProviders;
 
-            var provider = (FirebirdJobQueueProvider)providers.GetProvider("default");
+            var provider = (SQLAnywhereJobQueueProvider)providers.GetProvider("default");
 
             Assert.Same(_options, provider.Options);
         }
@@ -77,9 +77,9 @@ namespace Hangfire.Firebird.Tests
         public void GetConnection_ReturnsExistingConnection_WhenStorageUsesIt()
         {
             var connection = ConnectionUtils.CreateConnection();
-            var storage = new FirebirdStorage(connection, _options);
+            var storage = new SQLAnywhereStorage(connection, _options);
 
-            using (var storageConnection = (FirebirdConnection)storage.GetConnection())
+            using (var storageConnection = (SQLAnywhereConnection)storage.GetConnection())
             {
                 Assert.Same(connection, storageConnection.Connection);
                 Assert.False(storageConnection.OwnsConnection);
@@ -98,7 +98,7 @@ namespace Hangfire.Firebird.Tests
         public void GetConnection_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
-            using (var connection = (FirebirdConnection)storage.GetConnection())
+            using (var connection = (SQLAnywhereConnection)storage.GetConnection())
             {
                 Assert.NotNull(connection);
                 Assert.True(connection.OwnsConnection);
@@ -116,9 +116,9 @@ namespace Hangfire.Firebird.Tests
             Assert.Contains(typeof(ExpirationManager), componentTypes);
         }
 
-        private FirebirdStorage CreateStorage()
+        private SQLAnywhereStorage CreateStorage()
         {
-            return new FirebirdStorage(
+            return new SQLAnywhereStorage(
                 ConnectionUtils.GetConnectionString(),
                 _options);
         }

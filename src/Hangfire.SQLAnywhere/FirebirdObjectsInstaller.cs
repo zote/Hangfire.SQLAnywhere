@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -26,21 +26,22 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using Dapper;
 using Hangfire.Logging;
-using FirebirdSql.Data.FirebirdClient;
-using FirebirdSql.Data.Isql;
+using System.Data.Common;
 
-namespace Hangfire.Firebird
+namespace Hangfire.SQLAnywhere
 {
     [ExcludeFromCodeCoverage]
-    internal static class FirebirdObjectsInstaller
+    internal static class SQLAnywhereObjectsInstaller
     {
-        private static readonly ILog Log = LogProvider.GetLogger(typeof(FirebirdStorage));
+        private static readonly ILog Log = LogProvider.GetLogger(typeof(SQLAnywhereStorage));
 
-        public static void Install(FbConnection connection)
+        public static void Install(DbConnection connection)
         {
-            if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null)
+            {
+                throw new ArgumentNullException("connection");
+            }
 
             Log.Info("Start installing Hangfire SQL objects...");
 
@@ -51,10 +52,7 @@ namespace Hangfire.Firebird
             {
                 try
                 {
-                    var script = GetStringResource(
-                        typeof(FirebirdObjectsInstaller).Assembly,
-                        string.Format("Hangfire.Firebird.Install.v{0}.sql",
-                            version.ToString(CultureInfo.InvariantCulture)));
+                    var script = GetStringResource(typeof(SQLAnywhereObjectsInstaller).Assembly, string.Format("Hangfire.SQLAnywhere.Install.v{0}.sql", version.ToString(CultureInfo.InvariantCulture)));
 
                     if (!VersionAlreadyApplied(connection, version))
                     {
@@ -67,7 +65,7 @@ namespace Hangfire.Firebird
                         UpdateVersion(connection, version);
                     }
                 }
-                catch (FbException)
+                catch (DbException)
                 {
                     throw;
                 }
@@ -89,7 +87,7 @@ namespace Hangfire.Firebird
                 if (stream == null)
                 {
                     throw new InvalidOperationException(String.Format(
-                        "Requested resource `{0}` was not found in the assembly `{1}`.",
+                        "Requested resource '{0}' was not found in the assembly `{1}`.",
                         resourceName,
                         assembly));
                 }
@@ -101,27 +99,41 @@ namespace Hangfire.Firebird
             }
         }
 
-        private static bool VersionAlreadyApplied(FbConnection connection, int version)
+        private static bool VersionAlreadyApplied(DbConnection connection, int version)
         {
-            bool alreadyApplied = false;
+            using (var cmd = connection.CreateCommand())
+            {
+                bool alreadyApplied = false;
 
-            bool tableExists = Convert.ToBoolean(connection.ExecuteScalar(@"SELECT count(*) FROM rdb$relations where rdb$relation_name = 'HANGFIRE.SCHEMA';"));
+                cmd.CommandText = @"SELECT count(*) FROM sys.systables where table_name = 'HANGFIRE_SCHEMA';";
 
-            if (tableExists)
-                alreadyApplied = Convert.ToBoolean(connection.ExecuteScalar(string.Format(@"SELECT 1 FROM ""HANGFIRE.SCHEMA"" WHERE ""VERSION"" = {0};", version)));
-              
-            return alreadyApplied;
+                bool tableExists = Convert.ToBoolean(cmd.ExecuteScalar());
+
+                if (tableExists)
+                {
+                    cmd.CommandText = string.Format(@"SELECT 1 FROM HANGFIRE_SCHEMA WHERE VERSION = {0};", version);
+
+                    alreadyApplied = Convert.ToBoolean(cmd.ExecuteScalar());
+                }
+
+                return alreadyApplied;
+            }
         }
 
-        private static void UpdateVersion(FbConnection connection, int version)
+        private static void UpdateVersion(DbConnection connection, int version)
         {
-            if (version == 1)
+            using (var cmd = connection.CreateCommand())
             {
-                connection.Execute(string.Format(@"INSERT INTO ""HANGFIRE.SCHEMA"" (""VERSION"") VALUES ({0});", version));
-            }
-            else
-            {
-                connection.Execute(string.Format(@"UPDATE ""HANGFIRE.SCHEMA"" SET ""VERSION"" = {0};", version));
+                if (version == 1)
+                {
+                    cmd.CommandText = string.Format(@"INSERT INTO HANGFIRE_SCHEMA (VERSION) VALUES ({0});", version);
+                }
+                else
+                {
+                    cmd.CommandText = string.Format(@"UPDATE HANGFIRE_SCHEMA SET VERSION = {0};", version);
+                }
+
+                cmd.ExecuteNonQuery();
             }
         }
     }

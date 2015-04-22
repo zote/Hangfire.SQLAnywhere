@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Hangfire.Firebird.Msmq;
+using Hangfire.SQLAnywhere.Msmq;
 using Xunit;
 
 namespace Hangfire.Msmq.Tests

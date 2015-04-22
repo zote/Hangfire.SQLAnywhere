@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using Hangfire.Firebird;
-using Hangfire.Firebird.Msmq;
+using Hangfire.SQLAnywhere;
+using Hangfire.SQLAnywhere.Msmq;
 using Hangfire.States;
 using Xunit;
 
@@ -9,13 +9,13 @@ namespace Hangfire.Msmq.Tests
 {
     public class MsmqSqlServerStorageExtensionsFacts
     {
-        private readonly FirebirdStorage _storage;
+        private readonly SQLAnywhereStorage _storage;
 
         public MsmqSqlServerStorageExtensionsFacts()
         {
-             _storage = new FirebirdStorage(
-                @"User=SYSDBA;Password=masterkey;Database=S:\Source\Hangfire.Firebird\HANGFIRE_MSMQ_TESTS.FDB;Packet Size=8192;DataSource=localhost;Port=3050;Dialect=3;Charset=NONE;ServerType=1;ClientLibrary=S:\Source\Hangfire.Firebird\Firebird\fbembed.dll;",
-                new FirebirdStorageOptions { PrepareSchemaIfNecessary = false });
+             _storage = new SQLAnywhereStorage(
+                @"User=SYSDBA;Password=masterkey;Database=S:\Source\Hangfire.SQLAnywhere\HANGFIRE_MSMQ_TESTS.FDB;Packet Size=8192;DataSource=localhost;Port=3050;Dialect=3;Charset=NONE;ServerType=1;ClientLibrary=S:\Source\Hangfire.SQLAnywhere\SQLAnywhere\fbembed.dll;",
+                new SQLAnywhereStorageOptions { PrepareSchemaIfNecessary = false });
         }
 
         [Fact]

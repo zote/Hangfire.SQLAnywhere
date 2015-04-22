@@ -1,7 +1,7 @@
 ﻿using System;
-//using FirebirdSql.Data.FirebirdClient;
+//using SQLAnywhereSql.Data.SQLAnywhereClient;
 
-namespace Hangfire.Firebird
+namespace Hangfire.SQLAnywhere
 {
     public static partial class Utils
     {

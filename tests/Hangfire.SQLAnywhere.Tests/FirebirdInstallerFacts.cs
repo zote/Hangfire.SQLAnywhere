@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -28,12 +28,12 @@ using System.Linq;
 using System.Threading;
 using System.IO;
 using Dapper;
-using FirebirdSql.Data.FirebirdClient;
+using SQLAnywhereSql.Data.SQLAnywhereClient;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
-    public class FirebirdInstallerFacts
+    public class SQLAnywhereInstallerFacts
     {
         [Fact]
         public void InstallingSchemaShouldNotThrowAnException()
@@ -48,7 +48,7 @@ namespace Hangfire.Firebird.Tests
                 {
                     string prefix = "hangfire_tests_" + System.Guid.NewGuid().ToString().Replace("-", "_").ToLower();
 
-                    FirebirdObjectsInstaller.Install(connection);
+                    SQLAnywhereObjectsInstaller.Install(connection);
                 });
 
                 //DropDatabase();

@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -27,22 +27,22 @@ using System.Linq;
 using System.Threading;
 using Dapper;
 using Moq;
-using FirebirdSql.Data.FirebirdClient;
+using SQLAnywhereSql.Data.SQLAnywhereClient;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
-    public class FirebirdDistributedLockFacts
+    public class SQLAnywhereDistributedLockFacts
     {
         private readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenResourceIsNullOrEmpty()
         {
-            FirebirdStorageOptions options = new FirebirdStorageOptions();
+            SQLAnywhereStorageOptions options = new SQLAnywhereStorageOptions();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdDistributedLock("", _timeout, new Mock<IDbConnection>().Object, options));
+                () => new SQLAnywhereDistributedLock("", _timeout, new Mock<IDbConnection>().Object, options));
 
             Assert.Equal("resource", exception.ParamName);
         }
@@ -50,10 +50,10 @@ namespace Hangfire.Firebird.Tests
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
-            FirebirdStorageOptions options = new FirebirdStorageOptions();
+            SQLAnywhereStorageOptions options = new SQLAnywhereStorageOptions();
 
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdDistributedLock("hello", _timeout, null, options));
+                () => new SQLAnywhereDistributedLock("hello", _timeout, null, options));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -62,7 +62,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenOptionsIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdDistributedLock("hi", _timeout, new Mock<IDbConnection>().Object, null));
+                () => new SQLAnywhereDistributedLock("hi", _timeout, new Mock<IDbConnection>().Object, null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -92,14 +92,14 @@ namespace Hangfire.Firebird.Tests
         [Fact, CleanDatabase]
         public void Ctor_AcquiresExclusiveApplicationLock_WithoutUseNativeDatabaseTransactions_OnSession()
         {
-            FirebirdStorageOptions options = new FirebirdStorageOptions()
+            SQLAnywhereStorageOptions options = new SQLAnywhereStorageOptions()
             {
                 //UseNativeDatabaseTransactions = false
             };
 
             UseConnection(connection =>
             {
-                var distributedLock = new FirebirdDistributedLock("hello", _timeout, connection, options);
+                var distributedLock = new SQLAnywhereDistributedLock("hello", _timeout, connection, options);
 
                 var lockCount = connection.Query<long>(
                     string.Format(@"SELECT COUNT(*) FROM ""{0}.LOCK"" WHERE resource = @resource;", options.Prefix) , new { resource = "hello" }).Single();
@@ -145,7 +145,7 @@ namespace Hangfire.Firebird.Tests
         [Fact, CleanDatabase]
         public void Ctor_ThrowsAnException_IfLockCanNotBeGranted_WithoutUseNativeDatabaseTransactions()
         {
-            FirebirdStorageOptions options = new FirebirdStorageOptions()
+            SQLAnywhereStorageOptions options = new SQLAnywhereStorageOptions()
             {
                 //UseNativeDatabaseTransactions = false
             };
@@ -156,7 +156,7 @@ namespace Hangfire.Firebird.Tests
             var thread = new Thread(
                 () => UseConnection(connection1 =>
                 {
-                    using (new FirebirdDistributedLock("exclusive", _timeout, connection1, options))
+                    using (new SQLAnywhereDistributedLock("exclusive", _timeout, connection1, options))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -167,8 +167,8 @@ namespace Hangfire.Firebird.Tests
             lockAcquired.Wait();
 
             UseConnection(connection2 =>
-                Assert.Throws<FirebirdDistributedLockException>(
-                    () => new FirebirdDistributedLock("exclusive", _timeout, connection2, options)));
+                Assert.Throws<SQLAnywhereDistributedLockException>(
+                    () => new SQLAnywhereDistributedLock("exclusive", _timeout, connection2, options)));
 
             releaseLock.Set();
             thread.Join();
@@ -198,14 +198,14 @@ namespace Hangfire.Firebird.Tests
         [Fact, CleanDatabase]
         public void Dispose_ReleasesExclusiveApplicationLock_WithoutUseNativeDatabaseTransactions()
         {
-            FirebirdStorageOptions options = new FirebirdStorageOptions()
+            SQLAnywhereStorageOptions options = new SQLAnywhereStorageOptions()
             {
                 //UseNativeDatabaseTransactions = false
             };
 
             UseConnection(connection =>
             {
-                var distributedLock = new FirebirdDistributedLock("hello", _timeout, connection, options);
+                var distributedLock = new SQLAnywhereDistributedLock("hello", _timeout, connection, options);
                 distributedLock.Dispose();
 
                 var lockCount = connection.Query<long>(

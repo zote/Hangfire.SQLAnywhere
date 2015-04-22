@@ -3,21 +3,21 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Dapper;
-using FirebirdSql.Data.FirebirdClient;
+using SQLAnywhereSql.Data.SQLAnywhereClient;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
     public class ExpirationManagerFacts
     {
         private readonly CancellationToken _token;
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
 
         public ExpirationManagerFacts()
         {
             var cts = new CancellationTokenSource();
             _token = cts.Token;
-            _options = new FirebirdStorageOptions();
+            _options = new SQLAnywhereStorageOptions();
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace Hangfire.Firebird.Tests
             }
         }
 
-        private static int CreateExpirationEntry(FbConnection connection, FirebirdStorageOptions options, DateTime? expireAt)
+        private static int CreateExpirationEntry(FbConnection connection, SQLAnywhereStorageOptions options, DateTime? expireAt)
         {
             string insertSqlNull = @"
                 INSERT INTO """ + options.Prefix + @".COUNTER"" (""KEY"", ""VALUE"", expireat)
@@ -191,7 +191,7 @@ namespace Hangfire.Firebird.Tests
             return recordId;
         }
 
-        private static bool IsEntryExpired(FbConnection connection, FirebirdStorageOptions options, int entryId)
+        private static bool IsEntryExpired(FbConnection connection, SQLAnywhereStorageOptions options, int entryId)
         {
             var count = connection.Query<long>(string.Format(@"
                 SELECT COUNT(*) FROM ""{0}.COUNTER"" WHERE id = @id;", options.Prefix), 
@@ -207,7 +207,7 @@ namespace Hangfire.Firebird.Tests
 
         private ExpirationManager CreateManager(FbConnection connection)
         {
-            var storage = new FirebirdStorage(connection, _options);
+            var storage = new SQLAnywhereStorage(connection, _options);
             return new ExpirationManager(storage, _options, TimeSpan.Zero);
         }
     }

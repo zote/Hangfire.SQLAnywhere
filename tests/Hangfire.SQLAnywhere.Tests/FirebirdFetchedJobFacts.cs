@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -28,30 +28,30 @@ using System.Linq;
 using System.Threading;
 using Dapper;
 using Moq;
-using FirebirdSql.Data.FirebirdClient;
+using SQLAnywhereSql.Data.SQLAnywhereClient;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
-    public class FirebirdFetchedJobFacts
+    public class SQLAnywhereFetchedJobFacts
     {
         private const string JobId = "id";
         private const string Queue = "queue";
 
         private readonly Mock<IDbConnection> _connection;
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
 
-        public FirebirdFetchedJobFacts()
+        public SQLAnywhereFetchedJobFacts()
         {
             _connection = new Mock<IDbConnection>();
-            _options = new FirebirdStorageOptions();
+            _options = new SQLAnywhereStorageOptions();
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdFetchedJob(null, _options, 1, JobId, Queue));
+                () => new SQLAnywhereFetchedJob(null, _options, 1, JobId, Queue));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -60,7 +60,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenOptionsIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdFetchedJob(_connection.Object, null, 1, JobId, Queue));
+                () => new SQLAnywhereFetchedJob(_connection.Object, null, 1, JobId, Queue));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -69,7 +69,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenJobIdIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdFetchedJob(_connection.Object, _options, 1, null, Queue));
+                () => new SQLAnywhereFetchedJob(_connection.Object, _options, 1, null, Queue));
 
             Assert.Equal("jobId", exception.ParamName);
         }
@@ -78,7 +78,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdFetchedJob(_connection.Object, _options, 1, JobId, null));
+                () => new SQLAnywhereFetchedJob(_connection.Object, _options, 1, JobId, null));
 
             Assert.Equal("queue", exception.ParamName);
         }
@@ -86,7 +86,7 @@ namespace Hangfire.Firebird.Tests
         [Fact]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            var fetchedJob = new FirebirdFetchedJob(_connection.Object, _options, 1, JobId, Queue);
+            var fetchedJob = new SQLAnywhereFetchedJob(_connection.Object, _options, 1, JobId, Queue);
 
             Assert.Equal(1, fetchedJob.Id);
             Assert.Equal(JobId, fetchedJob.JobId);
@@ -100,7 +100,7 @@ namespace Hangfire.Firebird.Tests
             {
                 // Arrange
                 var id = CreateJobQueueRecord(connection, _options, "1", "default");
-                var processingJob = new FirebirdFetchedJob(connection, _options, id, "1", "default");
+                var processingJob = new SQLAnywhereFetchedJob(connection, _options, id, "1", "default");
 
                 // Act
                 processingJob.RemoveFromQueue();
@@ -121,7 +121,7 @@ namespace Hangfire.Firebird.Tests
                 CreateJobQueueRecord(connection, _options, "1", "critical");
                 CreateJobQueueRecord(connection, _options, "2", "default");
 
-                var fetchedJob = new FirebirdFetchedJob(connection, _options, 999, "1", "default");
+                var fetchedJob = new SQLAnywhereFetchedJob(connection, _options, 999, "1", "default");
 
                 // Act
                 fetchedJob.RemoveFromQueue();
@@ -139,7 +139,7 @@ namespace Hangfire.Firebird.Tests
             {
                 // Arrange
                 var id = CreateJobQueueRecord(connection, _options, "1", "default");
-                var processingJob = new FirebirdFetchedJob(connection, _options, id, "1", "default");
+                var processingJob = new SQLAnywhereFetchedJob(connection, _options, id, "1", "default");
 
                 // Act
                 processingJob.Requeue();
@@ -157,7 +157,7 @@ namespace Hangfire.Firebird.Tests
             {
                 // Arrange
                 var id = CreateJobQueueRecord(connection, _options, "1", "default");
-                var processingJob = new FirebirdFetchedJob(connection, _options, id, "1", "default");
+                var processingJob = new SQLAnywhereFetchedJob(connection, _options, id, "1", "default");
 
                 // Act
                 processingJob.Dispose();
@@ -168,7 +168,7 @@ namespace Hangfire.Firebird.Tests
             });
         }
 
-        private static int CreateJobQueueRecord(IDbConnection connection, FirebirdStorageOptions options, string jobId, string queue)
+        private static int CreateJobQueueRecord(IDbConnection connection, SQLAnywhereStorageOptions options, string jobId, string queue)
         {
             string arrangeSql = string.Format(CultureInfo.InvariantCulture, @"
                 INSERT INTO ""{0}.JOBQUEUE"" (jobid, queue, fetchedat)

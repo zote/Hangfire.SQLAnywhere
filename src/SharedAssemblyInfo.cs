@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyProduct("Hangfire.Firebird")]
+[assembly: AssemblyProduct("Hangfire.SQLAnywhere")]
 [assembly: AssemblyCompany("Rob Segerink")]
 [assembly: AssemblyCopyright("Copyright © 2015 Rob Segerink")]
 [assembly: AssemblyCulture("")]

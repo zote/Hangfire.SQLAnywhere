@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -28,31 +28,31 @@ using System.Linq;
 using Dapper;
 using Hangfire.States;
 using Moq;
-using FirebirdSql.Data.FirebirdClient;
+using SQLAnywhereSql.Data.SQLAnywhereClient;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
-    public class FirebirdWriteOnlyTransactionFacts
+    public class SQLAnywhereWriteOnlyTransactionFacts
     {
         private readonly PersistentJobQueueProviderCollection _queueProviders;
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
 
-        public FirebirdWriteOnlyTransactionFacts()
+        public SQLAnywhereWriteOnlyTransactionFacts()
         {
             var defaultProvider = new Mock<IPersistentJobQueueProvider>();
             defaultProvider.Setup(x => x.GetJobQueue(It.IsNotNull<IDbConnection>()))
                 .Returns(new Mock<IPersistentJobQueue>().Object);
 
             _queueProviders = new PersistentJobQueueProviderCollection(defaultProvider.Object);
-            _options = new FirebirdStorageOptions();
+            _options = new SQLAnywhereStorageOptions();
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_IfConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdWriteOnlyTransaction(null, _options, _queueProviders));
+                () => new SQLAnywhereWriteOnlyTransaction(null, _options, _queueProviders));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -61,7 +61,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_IfOptionsIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null, _queueProviders));
+                () => new SQLAnywhereWriteOnlyTransaction(ConnectionUtils.CreateConnection(), null, _queueProviders));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -71,7 +71,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_IfProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdWriteOnlyTransaction(ConnectionUtils.CreateConnection(), _options, null));
+                () => new SQLAnywhereWriteOnlyTransaction(ConnectionUtils.CreateConnection(), _options, null));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -213,7 +213,7 @@ namespace Hangfire.Firebird.Tests
             });
         }*/
 
-        private static dynamic GetTestJob(IDbConnection connection, FirebirdStorageOptions options, string jobId)
+        private static dynamic GetTestJob(IDbConnection connection, SQLAnywhereStorageOptions options, string jobId)
         {
             return connection
                 .Query(string.Format(@"SELECT * FROM ""{0}.JOB"" WHERE id = @id", options.Prefix), new { id = Convert.ToInt32(jobId, CultureInfo.InvariantCulture) })
@@ -717,9 +717,9 @@ namespace Hangfire.Firebird.Tests
 
         private void Commit(
             FbConnection connection,
-            Action<FirebirdWriteOnlyTransaction> action)
+            Action<SQLAnywhereWriteOnlyTransaction> action)
         {
-            using (var transaction = new FirebirdWriteOnlyTransaction(connection, _options, _queueProviders))
+            using (var transaction = new SQLAnywhereWriteOnlyTransaction(connection, _options, _queueProviders))
             {
                 action(transaction);
                 transaction.Commit();

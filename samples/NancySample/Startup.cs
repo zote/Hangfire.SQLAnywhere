@@ -1,7 +1,7 @@
 ﻿using Hangfire;
 using Hangfire.Dashboard;
-using Hangfire.Firebird;
-using Hangfire.Firebird.Msmq;
+using Hangfire.SQLAnywhere;
+using Hangfire.SQLAnywhere.Msmq;
 using Microsoft.Owin;
 using Owin;
 
@@ -15,9 +15,9 @@ namespace NancySample
         {
             app.UseHangfire(config =>
             {
-                //use Firebird embedded with MSMQ
+                //use SQLAnywhere embedded with MSMQ
                 config
-                    .UseFirebirdStorage(@"User=SYSDBA;Password=masterkey;Database=S:\Source\Hangfire.Firebird\HANGFIRE_SAMPLE.FDB;Packet Size=8192;DataSource=localhost;Port=3050;Dialect=3;Charset=NONE;ServerType=1;ClientLibrary=S:\Source\Hangfire.Firebird\Firebird\fbembed.dll;")
+                    .UseSQLAnywhereStorage(@"User=SYSDBA;Password=masterkey;Database=S:\Source\Hangfire.SQLAnywhere\HANGFIRE_SAMPLE.FDB;Packet Size=8192;DataSource=localhost;Port=3050;Dialect=3;Charset=NONE;ServerType=1;ClientLibrary=S:\Source\Hangfire.SQLAnywhere\SQLAnywhere\fbembed.dll;")
                     .UseMsmqQueues(@".\private$\hangfire-{0}");
                 config.UseServer();
             });

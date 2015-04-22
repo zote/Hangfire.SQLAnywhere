@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -26,17 +26,17 @@ using System.Diagnostics;
 using System.Threading;
 using Dapper;
 
-namespace Hangfire.Firebird
+namespace Hangfire.SQLAnywhere
 {
-    internal class FirebirdDistributedLock : IDisposable
+    internal class SQLAnywhereDistributedLock : IDisposable
     {
         private readonly IDbConnection _connection;
         private readonly string _resource;
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
         private bool _completed;
 
-        public FirebirdDistributedLock(string resource, TimeSpan timeout, IDbConnection connection,
-            FirebirdStorageOptions options)
+        public SQLAnywhereDistributedLock(string resource, TimeSpan timeout, IDbConnection connection,
+            SQLAnywhereStorageOptions options)
         {
             if (String.IsNullOrEmpty(resource)) throw new ArgumentNullException("resource");
             if (connection == null) throw new ArgumentNullException("connection");
@@ -49,7 +49,7 @@ namespace Hangfire.Firebird
             Init(resource, timeout, connection, options);
         }
 
-        private void Init(string resource, TimeSpan timeout, IDbConnection connection, FirebirdStorageOptions options)
+        private void Init(string resource, TimeSpan timeout, IDbConnection connection, SQLAnywhereStorageOptions options)
         {
             Stopwatch lockAcquiringTime = new Stopwatch();
             lockAcquiringTime.Start();
@@ -97,7 +97,7 @@ namespace Hangfire.Firebird
                 }
             }
 
-            throw new FirebirdDistributedLockException(
+            throw new SQLAnywhereDistributedLockException(
                 string.Format(
                 "Could not place a lock on the resource '{0}': {1}.",
                 _resource,
@@ -122,7 +122,7 @@ namespace Hangfire.Firebird
 
             if (rowsAffected <= 0)
             {
-                throw new FirebirdDistributedLockException(
+                throw new SQLAnywhereDistributedLockException(
                     string.Format(
                         "Could not release a lock on the resource '{0}'. Lock does not exists.",
                         _resource));

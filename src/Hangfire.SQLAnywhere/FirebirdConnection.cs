@@ -1,19 +1,19 @@
-// This file is part of Hangfire.Firebird
+// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -23,36 +23,35 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Dapper;
 using Hangfire.Common;
 using Hangfire.Server;
-using Hangfire.Firebird.Entities;
+using Hangfire.SQLAnywhere.Entities;
 using Hangfire.Storage;
-using FirebirdSql.Data.FirebirdClient;
 
-namespace Hangfire.Firebird
+namespace Hangfire.SQLAnywhere
 {
-    internal class FirebirdConnection : IStorageConnection
+    internal class SQLAnywhereConnection : IStorageConnection
     {
-        private readonly FbConnection _connection;
+        private readonly DbConnection _connection;
         private readonly PersistentJobQueueProviderCollection _queueProviders;
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
 
-        public FirebirdConnection(
-            FbConnection connection,
+        public SQLAnywhereConnection(
+            DbConnection connection,
             PersistentJobQueueProviderCollection queueProviders,
-            FirebirdStorageOptions options)
+            SQLAnywhereStorageOptions options)
             : this(connection, queueProviders, options, true)
         {
         }
 
-        public FirebirdConnection(
-            FbConnection connection, 
+        public SQLAnywhereConnection(
+            DbConnection connection, 
             PersistentJobQueueProviderCollection queueProviders,
-            FirebirdStorageOptions options,
+            SQLAnywhereStorageOptions options,
             bool ownsConnection)
         {
             if (connection == null) throw new ArgumentNullException("connection");
@@ -65,7 +64,7 @@ namespace Hangfire.Firebird
             OwnsConnection = ownsConnection;
         }
 
-        public FbConnection Connection { get { return _connection; } }
+        public DbConnection Connection { get { return _connection; } }
         public bool OwnsConnection { get; private set; }
 
         public void Dispose()
@@ -78,12 +77,12 @@ namespace Hangfire.Firebird
 
         public IWriteOnlyTransaction CreateWriteTransaction()
         {
-            return new FirebirdWriteOnlyTransaction(_connection, _options, _queueProviders);
+            return new SQLAnywhereWriteOnlyTransaction(_connection, _options, _queueProviders);
         }
 
         public IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
-            return new FirebirdDistributedLock(
+            return new SQLAnywhereDistributedLock(
                 String.Format("HangFire:{0}", resource),
                 timeout,
                 _connection,
@@ -116,10 +115,17 @@ namespace Hangfire.Firebird
             DateTime createdAt,
             TimeSpan expireIn)
         {
-            if (job == null) throw new ArgumentNullException("job");
-            if (parameters == null) throw new ArgumentNullException("parameters");
+            if (job == null)
+            {
+                throw new ArgumentNullException("job");
+            }
 
-            string createJobSql = string.Format(@"INSERT INTO ""{0}.JOB"" (invocationdata, arguments, createdat, expireat) 
+            if (parameters == null)
+            {
+                throw new ArgumentNullException("parameters");
+            }
+
+            string createJobSql = string.Format(@"INSERT INTO {0}.HANGFIRE_JOB (invocationdata, arguments, createdat, expireat) 
                 VALUES (@invocationData, @arguments, @createdAt, @expireAt)
                 RETURNING id;", _options.Prefix);
 
@@ -131,7 +137,7 @@ namespace Hangfire.Firebird
                 {
                     invocationData = JobHelper.ToJson(invocationData),
                     arguments = invocationData.Arguments,
-                    createdAt = createdAt,
+                    createdAt,
                     expireAt = createdAt.Add(expireIn)
                 }).ToString();
                
@@ -149,7 +155,7 @@ namespace Hangfire.Firebird
                     };
                 }
 
-                string insertParameterSql = string.Format(@"INSERT INTO ""{0}.JOBPARAMETER"" (jobid, name, ""VALUE"")
+                string insertParameterSql = string.Format(@"INSERT INTO {0}.HANGFIRE_JOBPARAMETER (jobid, name, VALUE)
                     VALUES (@jobId, @name, @value);", _options.Prefix);
 
                 _connection.Execute(insertParameterSql, parameterArray);
@@ -163,7 +169,7 @@ namespace Hangfire.Firebird
             if (id == null) throw new ArgumentNullException("id");
 
             string sql = string.Format(@"SELECT invocationdata, statename, arguments, createdat
-                FROM ""{0}.JOB"" 
+                FROM {0}.HANGFIRE_JOB
                 WHERE id = @id;", _options.Prefix);
 
             var jobData = _connection.Query<SqlJob>(sql, new { id = Convert.ToInt32(id, CultureInfo.InvariantCulture) })

@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -28,19 +28,19 @@ using System.Linq;
 using System.Threading;
 using Dapper;
 using Moq;
-using FirebirdSql.Data.FirebirdClient;
+using SQLAnywhereSql.Data.SQLAnywhereClient;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
-    public class FirebirdJobQueueFacts
+    public class SQLAnywhereJobQueueFacts
     {
         private static readonly string[] DefaultQueues = { "default" };
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
 
-        public FirebirdJobQueueFacts()
+        public SQLAnywhereJobQueueFacts()
         {
-            _options = new FirebirdStorageOptions()
+            _options = new SQLAnywhereStorageOptions()
             {
 
             };
@@ -50,7 +50,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdJobQueue(null, new FirebirdStorageOptions()));
+                () => new SQLAnywhereJobQueue(null, new SQLAnywhereStorageOptions()));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -59,7 +59,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenOptionsValueIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdJobQueue(new Mock<IDbConnection>().Object, null));
+                () => new SQLAnywhereJobQueue(new Mock<IDbConnection>().Object, null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -135,7 +135,7 @@ namespace Hangfire.Firebird.Tests
                 var queue = CreateJobQueue(connection);
 
                 // Act
-                var payload = (FirebirdFetchedJob)queue.Dequeue(
+                var payload = (SQLAnywhereFetchedJob)queue.Dequeue(
                     DefaultQueues,
                     CreateTimingOutCancellationToken());
 
@@ -351,14 +351,14 @@ namespace Hangfire.Firebird.Tests
 
                 var queue = CreateJobQueue(connection);
 
-                var queueFirst = (FirebirdFetchedJob)queue.Dequeue(
+                var queueFirst = (SQLAnywhereFetchedJob)queue.Dequeue(
                     queueNames,
                     CreateTimingOutCancellationToken());
 
                 Assert.NotNull(queueFirst.JobId);
                 Assert.Contains(queueFirst.Queue, queueNames);
 
-                var queueLast = (FirebirdFetchedJob)queue.Dequeue(
+                var queueLast = (SQLAnywhereFetchedJob)queue.Dequeue(
                     queueNames,
                     CreateTimingOutCancellationToken());
 
@@ -393,9 +393,9 @@ namespace Hangfire.Firebird.Tests
 
         public static void Sample(string arg1, string arg2) { }
 
-        private static FirebirdJobQueue CreateJobQueue(IDbConnection connection)
+        private static SQLAnywhereJobQueue CreateJobQueue(IDbConnection connection)
         {
-            return new FirebirdJobQueue(connection, new FirebirdStorageOptions());
+            return new SQLAnywhereJobQueue(connection, new SQLAnywhereStorageOptions());
         }
 
         private static void UseConnection(Action<FbConnection> action)

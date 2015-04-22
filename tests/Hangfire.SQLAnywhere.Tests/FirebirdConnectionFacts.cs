@@ -1,19 +1,19 @@
-﻿// This file is part of Hangfire.Firebird
+﻿// This file is part of Hangfire.SQLAnywhere
 
-// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.Firebird>.
+// Copyright © 2015 Rob Segerink <https://github.com/rsegerink/Hangfire.SQLAnywhere>.
 // 
-// Hangfire.Firebird is free software: you can redistribute it and/or modify
+// Hangfire.SQLAnywhere is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as 
 // published by the Free Software Foundation, either version 3 
 // of the License, or any later version.
 // 
-// Hangfire.Firebird is distributed in the hope that it will be useful,
+// Hangfire.SQLAnywhere is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
 // 
 // You should have received a copy of the GNU Lesser General Public 
-// License along with Hangfire.Firebird. If not, see <http://www.gnu.org/licenses/>.
+// License along with Hangfire.SQLAnywhere. If not, see <http://www.gnu.org/licenses/>.
 //
 // This work is based on the work of Sergey Odinokov, author of 
 // Hangfire. <http://hangfire.io/>
@@ -31,18 +31,18 @@ using Hangfire.Common;
 using Hangfire.Server;
 using Hangfire.Storage;
 using Moq;
-using FirebirdSql.Data.FirebirdClient;
+using SQLAnywhereSql.Data.SQLAnywhereClient;
 using Xunit;
 
-namespace Hangfire.Firebird.Tests
+namespace Hangfire.SQLAnywhere.Tests
 {
-    public class FirebirdConnectionFacts
+    public class SQLAnywhereConnectionFacts
     {
         private readonly Mock<IPersistentJobQueue> _queue;
         private readonly PersistentJobQueueProviderCollection _providers;
-        private readonly FirebirdStorageOptions _options;
+        private readonly SQLAnywhereStorageOptions _options;
 
-        public FirebirdConnectionFacts()
+        public SQLAnywhereConnectionFacts()
         {
             _queue = new Mock<IPersistentJobQueue>();
 
@@ -52,7 +52,7 @@ namespace Hangfire.Firebird.Tests
 
             _providers = new PersistentJobQueueProviderCollection(provider.Object);
 
-            _options = new FirebirdStorageOptions()
+            _options = new SQLAnywhereStorageOptions()
             {
                 
             };
@@ -62,7 +62,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenConnectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdConnection(null, _providers, _options));
+                () => new SQLAnywhereConnection(null, _providers, _options));
 
             Assert.Equal("connection", exception.ParamName);
         }
@@ -71,7 +71,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenProvidersCollectionIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdConnection(ConnectionUtils.CreateConnection(), null, _options));
+                () => new SQLAnywhereConnection(ConnectionUtils.CreateConnection(), null, _options));
 
             Assert.Equal("queueProviders", exception.ParamName);
         }
@@ -80,7 +80,7 @@ namespace Hangfire.Firebird.Tests
         public void Ctor_ThrowsAnException_WhenOptionsIsNull()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FirebirdConnection(ConnectionUtils.CreateConnection(), _providers, null));
+                () => new SQLAnywhereConnection(ConnectionUtils.CreateConnection(), _providers, null));
 
             Assert.Equal("options", exception.ParamName);
         }
@@ -90,7 +90,7 @@ namespace Hangfire.Firebird.Tests
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {
-                var connection = new FirebirdConnection(sqlConnection, _providers, _options);
+                var connection = new SQLAnywhereConnection(sqlConnection, _providers, _options);
 
                 connection.Dispose();
 
@@ -103,7 +103,7 @@ namespace Hangfire.Firebird.Tests
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
             {
-                var connection = new FirebirdConnection(sqlConnection, _providers, ownsConnection: false, options: _options);
+                var connection = new SQLAnywhereConnection(sqlConnection, _providers, ownsConnection: false, options: _options);
 
                 connection.Dispose();
 
@@ -217,7 +217,7 @@ namespace Hangfire.Firebird.Tests
                 invocationData.Arguments = sqlJob.ARGUMENTS;
 
                 var job = invocationData.Deserialize();
-                Assert.Equal(typeof(FirebirdConnectionFacts), job.Type);
+                Assert.Equal(typeof(SQLAnywhereConnectionFacts), job.Type);
                 Assert.Equal("SampleMethod", job.Method.Name);
                 Assert.Equal("\"Hello\"", job.Arguments[0]);
 
@@ -865,18 +865,18 @@ namespace Hangfire.Firebird.Tests
             });
         }
 
-        private void UseConnections(Action<FbConnection, FirebirdConnection> action)
+        private void UseConnections(Action<FbConnection, SQLAnywhereConnection> action)
         {
             using (var sqlConnection = ConnectionUtils.CreateConnection())
-            using (var connection = new FirebirdConnection(sqlConnection, _providers, _options))
+            using (var connection = new SQLAnywhereConnection(sqlConnection, _providers, _options))
             {
                 action(sqlConnection, connection);
             }
         }
 
-        private void UseConnection(Action<FirebirdConnection> action)
+        private void UseConnection(Action<SQLAnywhereConnection> action)
         {
-            using (var connection = new FirebirdConnection(
+            using (var connection = new SQLAnywhereConnection(
                 ConnectionUtils.CreateConnection(),
                 _providers,
                 _options))
